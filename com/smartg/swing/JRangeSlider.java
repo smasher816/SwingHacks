@@ -1,5 +1,6 @@
 package com.smartg.swing;
 
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -235,48 +236,45 @@ public class JRangeSlider extends JPanel {
     protected void paintComponent(Graphics g) {
 	super.paintComponent(g);
 
-	slider.setBounds(getBounds());
-	
-	slider.setValue(0);
 	RangeSliderUI ui = (RangeSliderUI) slider.getUI();
-	if(getPaintTrack()) {
-	    ui.paintTrack(g);
-	}
+	slider.setBounds(getBounds());
 
 	slider.setValue(model.getValue() + model.getExtent());
+	slider.paint(g);
 	extentThumbRect = ui.getThumbRect();
 
-	Rectangle clip = g.getClipBounds();
-
-	if (getOrientation() == SwingConstants.HORIZONTAL) {
-	    g.setClip((int) (model.getValue() / scaleX), 0, getWidth(), getHeight());
-	}
-
-	slider.paint(g);
-
-	g.setClip(clip.x, clip.y, clip.width, clip.height);
-	
-	if(getPaintLabels()) {
-	    ui.paintLabels(g);
-	}
-	if(getPaintTicks()) {
-	    ui.paintTicks(g);
-	}
-	
 	slider.setValue(model.getValue());
-	thumbRect = ui.getThumbRect();
 	ui.paintThumb(g);
+	thumbRect = ui.getThumbRect();
 
+	Rectangle fillRect;
 	switch (slider.getOrientation()) {
 	    case SwingConstants.HORIZONTAL:
 		middleRect = new Rectangle(thumbRect);
-		middleRect.width = extentThumbRect.x - thumbRect.x;
+		middleRect.x += thumbRect.width;
+		middleRect.width = extentThumbRect.x - thumbRect.x - thumbRect.width;
+
+		fillRect = new Rectangle(middleRect);
+		fillRect.height = middleRect.height/4;
+		fillRect.y += (middleRect.height-fillRect.height)/2;
 		break;
 	    case SwingConstants.VERTICAL:
+	    default:
 		middleRect = new Rectangle(extentThumbRect);
-		middleRect.height = thumbRect.y - extentThumbRect.y;
+		middleRect.y += extentThumbRect.height;
+		middleRect.height = thumbRect.y - extentThumbRect.y - extentThumbRect.height;
+
+		fillRect = new Rectangle(middleRect);
+		fillRect.width = middleRect.width/4;
+		fillRect.x += (middleRect.width-fillRect.width)/2;
 		break;
 	}
+
+	paintTrackRange(g, fillRect);
+    }
+
+    protected void paintTrackRange(Graphics g, Rectangle rect) {
+	g.fillRect(rect.x, rect.y, rect.width, rect.height);
     }
 
     private void computeScaleX() {
